@@ -11,61 +11,27 @@ import (
 
 func main() {
 	var myBoard [3][3]int // Initialize the board to zeros
-	var winner, row, col, value, numMoves int
-	var playerLetter = [3]string{"draw", "X", "O"}
-	var selectedLetter string
-	reader := bufio.NewReader(os.Stdin)
+	var winner, row, col, numMoves, playerLetter, value int
+	var playerLetterArry = [3]string{"draw", "x", "o"}
 	fmt.Println(" New Game ")
-	selectedLetter = getLetter()
-	input, err := reader.ReadString('\n')
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// input = strings.TrimSpace(input)
-	// if input == "x" {
-	// 	selectedLetter = "x"
-	// } else if selectedLetter == "o" {
-	// 	selectedLetter = "o"
-	// } else {
-	// 	fmt.Println("error - you must select x or o")
-	// }
-	for true {
-		fmt.Println("Select either x or o:")
-		input, err = reader.ReadString('\n')
-		input = strings.TrimSpace(input)
-		switch input {
-		case "x":
-			value = 1
-			myBoard[row][col] = 1
-			// return row, col, value, numMoves
-			break
-		case "o":
-			value = 2
-			myBoard[row][col] = 2
-			// return row, col, value, numMoves
-			break
-		default:
-			fmt.Println(`Error, please only enter an x or an o`)
-			// break
-		}
-	}
 	printBoard(myBoard)
+	playerLetter = getLetter()
 	for winner = 0; winner <= 0; winner = checkWin(myBoard, numMoves) {
-		row, col, value, numMoves = getMove(myBoard, numMoves)
+		row, col, numMoves = getMove(numMoves)
 		fmt.Printf("inside loop\n")
-		myBoard[row][col] = value
+		myBoard[row][col] = playerLetter
 		fmt.Printf("Values are %d %d %d \n", row, col, value)
 		fmt.Printf("The value from the array is %d \n", myBoard[row][col])
 		printBoard(myBoard)
 	}
 	if winner != 3 {
-		fmt.Printf("Congratulations to player %s !\n", playerLetter[winner])
+		fmt.Printf("Congratulations to player %s !\n", playerLetterArry[winner])
 	} else {
 		fmt.Printf("The game is a draw.\n")
 	}
 }
 
-func getMove(board [3][3]int, newMoves int, letter string) (row, col, value, outMoves int) {
+func getMove(newMoves int) (row, col, outMoves int) {
 	var err error
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Enter your move in the format 'row,col' in the range 1-3 (e.g., 1,2):")
@@ -87,36 +53,9 @@ func getMove(board [3][3]int, newMoves int, letter string) (row, col, value, out
 		log.Printf("invalid column number: %s\n", parts[1])
 	}
 	newMoves++
-	row++
-	col++
-	return row, col, value, newMoves
-}
-
-func printBoard(board [3][3]int) {
-	fmt.Println("Current Board:")
-	for i := 0; i < 3; i++ {
-		fmt.Print(" ")
-		for j := 0; j < 3; j++ {
-			symbol := " "
-			switch board[i][j] {
-			case 0:
-				symbol = "-"
-			case 1:
-				symbol = "X"
-			case 2:
-				symbol = "O"
-			}
-			fmt.Print(symbol)
-			if j < 2 {
-				fmt.Print(" | ")
-			}
-		}
-		fmt.Println()
-		if i < 2 {
-			fmt.Println("---+---+---")
-		}
-	}
-	fmt.Println()
+	row--
+	col--
+	return row, col, newMoves
 }
 
 func checkWin(board [3][3]int, numMoves int) int {
@@ -148,21 +87,53 @@ func computerMove(board [3][3]int) {
 
 }
 
-func getLetter() string {
+func getLetter() int {
 	var err error
 	var input string
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Select either x or o")
-	for input == "NaN" {
+	for true {
+		fmt.Println("Select either x or o:")
 		input, err = reader.ReadString('\n')
 		if err != nil {
-			log.Println(err)
+			log.Println(`Error, please only enter an x or an o`)
+			break
 		}
 		input = strings.TrimSpace(input)
-		if input == "x" || input == "o" {
-			log.Printf("Selected letter is %s\n", input)
-			return input
+		switch input {
+		case "x":
+			return 1
+		case "o":
+			return 2
+		default:
+			fmt.Println(`Error, please only enter an x or an o`)
 		}
 	}
-	return input
+	return 0
+}
+
+func printBoard(board [3][3]int) {
+	fmt.Println("Current Board:")
+	for i := 0; i < 3; i++ {
+		fmt.Print(" ")
+		for j := 0; j < 3; j++ {
+			symbol := " "
+			switch board[i][j] {
+			case 0:
+				symbol = "-"
+			case 1:
+				symbol = "X"
+			case 2:
+				symbol = "O"
+			}
+			fmt.Print(symbol)
+			if j < 2 {
+				fmt.Print(" | ")
+			}
+		}
+		fmt.Println()
+		if i < 2 {
+			fmt.Println("---+---+---")
+		}
+	}
+	fmt.Println()
 }
