@@ -16,23 +16,38 @@ func main() {
 	var selectedLetter string
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println(" New Game ")
-	for selectedLetter = "NaN"; selectedLetter != "NaN"; selectedLetter = getLetter() {
-		if selectedLetter != "NaN" {
-			log.Println("Selected letter is %s", selectedLetter)
-			break
-		}
-	}
+	selectedLetter = getLetter()
 	input, err := reader.ReadString('\n')
-	if err != nil {
-		log.Println(err)
-	}
-	input = strings.TrimSpace(input)
-	if input == "x" {
-		selectedLetter = "x"
-	} else if selectedLetter == "o" {
-		selectedLetter = "o"
-	} else {
-		fmt.Println("error - you must select x or o")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// input = strings.TrimSpace(input)
+	// if input == "x" {
+	// 	selectedLetter = "x"
+	// } else if selectedLetter == "o" {
+	// 	selectedLetter = "o"
+	// } else {
+	// 	fmt.Println("error - you must select x or o")
+	// }
+	for true {
+		fmt.Println("Select either x or o:")
+		input, err = reader.ReadString('\n')
+		input = strings.TrimSpace(input)
+		switch input {
+		case "x":
+			value = 1
+			myBoard[row][col] = 1
+			// return row, col, value, numMoves
+			break
+		case "o":
+			value = 2
+			myBoard[row][col] = 2
+			// return row, col, value, numMoves
+			break
+		default:
+			fmt.Println(`Error, please only enter an x or an o`)
+			// break
+		}
 	}
 	printBoard(myBoard)
 	for winner = 0; winner <= 0; winner = checkWin(myBoard, numMoves) {
@@ -50,10 +65,10 @@ func main() {
 	}
 }
 
-func getMove(board [3][3]int, newMoves int) (row, col, value, outMoves int) {
+func getMove(board [3][3]int, newMoves int, letter string) (row, col, value, outMoves int) {
 	var err error
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Enter your move in the format 'row,col' (e.g., 1,2):")
+	fmt.Println("Enter your move in the format 'row,col' in the range 1-3 (e.g., 1,2):")
 	input, err := reader.ReadString('\n')
 	if err != nil {
 		log.Println(err)
@@ -72,24 +87,8 @@ func getMove(board [3][3]int, newMoves int) (row, col, value, outMoves int) {
 		log.Printf("invalid column number: %s\n", parts[1])
 	}
 	newMoves++
-	for true {
-		fmt.Println("Enter the value for this position in the format of either x or o:")
-		input, err = reader.ReadString('\n')
-		input = strings.TrimSpace(input)
-		switch input {
-		case "x":
-			value = 1
-			board[row][col] = 1
-			return row, col, value, newMoves
-		case "o":
-			value = 2
-			board[row][col] = 2
-			return row, col, value, newMoves
-		default:
-			fmt.Println(`Error, please only enter an x or an o`)
-			break
-		}
-	}
+	row++
+	col++
 	return row, col, value, newMoves
 }
 
@@ -151,12 +150,19 @@ func computerMove(board [3][3]int) {
 
 func getLetter() string {
 	var err error
+	var input string
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Select either x or o")
-	input, err := reader.ReadString('\n')
-	if err != nil {
-		log.Println(err)
+	for input == "NaN" {
+		input, err = reader.ReadString('\n')
+		if err != nil {
+			log.Println(err)
+		}
+		input = strings.TrimSpace(input)
+		if input == "x" || input == "o" {
+			log.Printf("Selected letter is %s\n", input)
+			return input
+		}
 	}
-	input = strings.TrimSpace(input)
 	return input
 }
