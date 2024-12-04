@@ -3,13 +3,16 @@ package board
 import (
 	"context"
 	"fmt"
+	"strings"
 
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
 func CheckWin(ctx context.Context, tracer trace.Tracer, b [3][3]int) int {
 	ctx, childSpan := tracer.Start(ctx, "CheckWin")
 	defer childSpan.End()
+
 	//The idea here is to check every row for all of one player move and then
 	//check the two diagonals and if any of them have that the player is a winner
 	for i := 0; i < 3; i++ {
@@ -32,13 +35,20 @@ func CheckWin(ctx context.Context, tracer trace.Tracer, b [3][3]int) int {
 
 func CheckDraw(ctx context.Context, tracer trace.Tracer, b [3][3]int) bool {
 	ctx, childSpan := tracer.Start(ctx, "CheckDraw")
+	var fullRows int = 0
 	defer childSpan.End()
+	arryStr := "[" + strings.Trim(strings.Join(strings.Fields(fmt.Sprint(b)), ","), "[]") + "]"
 	for i := 0; i < 3; i++ {
 		if b[i][0] != 0 && b[i][1] != 0 && b[i][2] != 0 { // any zeros, not a tie
-			return true
+			fullRows++
 		}
 	}
-	return false
+	if fullRows == 3 {
+		childSpan.SetAttributes(attribute.String("board", arryStr))
+		return true
+	} else {
+		return false
+	}
 }
 
 func Print(ctx context.Context, tracer trace.Tracer, board [3][3]int) {

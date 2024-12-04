@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"ttt/board"
 	"ttt/computer"
 	"ttt/player"
@@ -22,9 +25,13 @@ const (
 
 // var myBoard [3][3]int // Initialize the board to zeros
 var myBoard [3][3]int = [3][3]int{{2, 0, 0}, {1, 1, 2}, {0, 0, 0}}
-var winner, row, col, playerLetterNum int
+var row, col, playerLetterNum int
+var gameNotEnded int = 0
+var computerTurn = false
 
 func main() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	ctx := context.Background()
 	otelShutdown, err := otelconfig.ConfigureOpenTelemetry()
 	if err != nil {
@@ -35,6 +42,11 @@ func main() {
 	tracer := otel.Tracer("tic-tac-toe")
 	ctx, parentSpan := tracer.Start(ctx, "parent-span")
 	defer parentSpan.End()
+	go func() {
+		<-c
+		parentSpan.End()
+		os.Exit(1)
+	}()
 
 	type Move struct {
 		Row int
@@ -53,27 +65,48 @@ func main() {
 		parentSpan.SetAttributes(attribute.Int("computerLetterNum", 1))
 		computerLetterNum = 1
 	}
-	for winner = 0; winner <= 0; winner = board.CheckWin(ctx, tracer, myBoard) { // This is the per-turn loop
-		row, col = player.GetMove(ctx, tracer, myBoard)
-		if board.CheckDraw(ctx, tracer, myBoard) {
-			winner = 3
-		} else if board.CheckWin(ctx, tracer, myBoard) != 0 {
-			winner = playerLetterNum
-		}
-		if myBoard[row][col] == 0 { // Make sure the cell is empty
-			myBoard[row][col] = playerLetterNum
-		} else {
-			log.Println("Error - This should not happen")
-			parentSpan.SetStatus(codes.Error, "Tried to change a cell already full")
+
+	for gameNotEnded == 0 { // This is the per-turn loop
+		if computerTurn == false {
+			row, col = player.GetMove(ctx, tracer, myBoard)
+			if myBoard[row][col] == 0 { // Make sure the cell is empty
+				myBoard[row][col] = playerLetterNum
+			} else {
+				log.Println("Error - This should not happen, tried to change cell already full")
+				parentSpan.SetStatus(codes.Error, "Tried to change a cell already full")
+				parentSpan.SetAttributes(attribute.Bool("computerTurn", computerTurn))
+			}
+			if board.CheckDraw(ctx, tracer, myBoard) {
+				gameNotEnded = 3
+			} else if board.CheckWin(ctx, tracer, myBoard) != 0 {
+				gameNotEnded = playerLetterNum
+			}
+
+			computerTurn = true
+		} else if computerTurn {
+			row, col = computer.GetBestMove(ctx, tracer, myBoard, computerLetterNum, playerLetterNum)
+			// myBoard[row][col] = computerLetterNum
+			if myBoard[row][col] == 0 { // Make sure the cell is empty
+				myBoard[row][col] = computerLetterNum
+				fmt.Printf("Computer move is %d,%d\n\n", row, col)
+			} else {
+				log.Println("Error - This should not happen, tried to change cell already full")
+				parentSpan.SetStatus(codes.Error, "Tried to change a cell already full")
+				parentSpan.SetAttributes(attribute.Bool("computerTurn", computerTurn))
+			}
+			if board.CheckDraw(ctx, tracer, myBoard) {
+				gameNotEnded = 3
+			} else if board.CheckWin(ctx, tracer, myBoard) != 0 {
+				gameNotEnded = computerLetterNum
+			}
+			computerTurn = false
 		}
 
-		row, col = computer.GetBestMove(ctx, tracer, myBoard, computerLetterNum, playerLetterNum)
-		myBoard[row][col] = computerLetterNum
 		board.Print(ctx, tracer, myBoard)
 	}
-	if winner == 1 || winner == 2 {
-		fmt.Printf("Congratulations to player %s !\n", playerLetterArry[winner])
-	} else if winner == 3 {
+	if gameNotEnded == 1 || gameNotEnded == 2 {
+		fmt.Printf("Congratulations to player %s !\n", playerLetterArry[gameNotEnded])
+	} else if gameNotEnded == 3 {
 		fmt.Printf("The game is a draw.\n")
 	} else {
 		fmt.Println("Error - This should not happen, check honeycomb")

@@ -38,10 +38,11 @@ func GetBestMove(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, 
 func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, depth int, isMaximizing bool, aiPlayer, humanPlayer int) int {
 	ctx, childSpan := tracer.Start(ctx, "minimax")
 	defer childSpan.End()
-	if board.CheckWin(ctx, tracer, gameBoard) == humanPlayer {
+	win := board.CheckWin(ctx, tracer, gameBoard)
+	if win == humanPlayer {
 		return -1
 	}
-	if board.CheckWin(ctx, tracer, gameBoard) == aiPlayer {
+	if win == aiPlayer {
 		return 1
 	}
 	if board.CheckDraw(ctx, tracer, gameBoard) {
