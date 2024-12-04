@@ -61,9 +61,12 @@ func main() {
 	if playerLetterNum == 1 {
 		parentSpan.SetAttributes(attribute.Int("computerLetterNum", 2))
 		computerLetterNum = 2
+		computerTurn = false
 	} else if playerLetterNum == 2 {
 		parentSpan.SetAttributes(attribute.Int("computerLetterNum", 1))
 		computerLetterNum = 1
+		computerTurn = true
+		fmt.Sprintln("Computer will move first")
 	}
 
 	for gameNotEnded == 0 { // This is the per-turn loop
@@ -115,4 +118,3 @@ func main() {
 }
 
 // To-do:  Get x being first, minimax working, write tests
-// Bugs: Full board does not generate draw

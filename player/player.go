@@ -51,7 +51,6 @@ func GetMove(ctx context.Context, tracer trace.Tracer, board [3][3]int) (row, co
 	}
 	childSpan.SetAttributes(attribute.Int("humanRow", row+1))
 	childSpan.SetAttributes(attribute.Int("humanCol", col+1))
-	fmt.Printf("Row is %d and Col is %d\n", row, col)
 	return row, col
 }
 
