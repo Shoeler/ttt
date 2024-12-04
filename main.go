@@ -20,7 +20,8 @@ const (
 	Empty   = 0
 )
 
-var myBoard [3][3]int // Initialize the board to zeros
+// var myBoard [3][3]int // Initialize the board to zeros
+var myBoard [3][3]int = [3][3]int{{2, 0, 0}, {1, 1, 2}, {0, 0, 0}}
 var winner, row, col, playerLetterNum int
 
 func main() {
@@ -53,7 +54,7 @@ func main() {
 		computerLetterNum = 1
 	}
 	for winner = 0; winner <= 0; winner = board.CheckWin(ctx, tracer, myBoard) { // This is the per-turn loop
-		row, col = player.GetMove(ctx, tracer)
+		row, col = player.GetMove(ctx, tracer, myBoard)
 		if board.CheckDraw(ctx, tracer, myBoard) {
 			winner = 3
 		} else if board.CheckWin(ctx, tracer, myBoard) != 0 {
@@ -62,7 +63,8 @@ func main() {
 		if myBoard[row][col] == 0 { // Make sure the cell is empty
 			myBoard[row][col] = playerLetterNum
 		} else {
-			log.Println("Error - you can not replace an existing move, try again")
+			log.Println("Error - This should not happen")
+			parentSpan.SetStatus(codes.Error, "Tried to change a cell already full")
 		}
 
 		row, col = computer.GetBestMove(ctx, tracer, myBoard, computerLetterNum, playerLetterNum)
@@ -78,3 +80,6 @@ func main() {
 		parentSpan.SetStatus(codes.Error, "This should not happen")
 	}
 }
+
+// To-do:  Get x being first, minimax working, write tests
+// Bugs: Full board does not generate draw

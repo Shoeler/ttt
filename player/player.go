@@ -14,38 +14,44 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func GetMove(ctx context.Context, tracer trace.Tracer) (row, col int) {
-	var err error
+func GetMove(ctx context.Context, tracer trace.Tracer, board [3][3]int) (row, col int) {
+	// var err error
 	ctx, childSpan := tracer.Start(ctx, "GetMove")
 	defer childSpan.End()
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Enter your move in the format 'row,col' in the range 1-3 (e.g., 1,2):")
-	input, err := reader.ReadString('\n')
-	if err != nil {
-		childSpan.AddEvent("Input error on row,col")
-		childSpan.SetStatus(codes.Error, "input broke")
-		childSpan.RecordError(err)
-		log.Println(err)
+	for validMove := 0; validMove != 1; {
+		fmt.Println("Enter your move in the format 'row,col' in the range 1-3 (e.g., 1,2):")
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			childSpan.AddEvent("Input error on row,col")
+			childSpan.SetStatus(codes.Error, "input broke")
+			childSpan.RecordError(err)
+			log.Println(err)
+		}
+		input = strings.TrimSpace(input)
+		parts := strings.Split(input, ",")
+		if len(parts) != 2 {
+			log.Println("invalid input format, please use 'row,col'")
+		}
+		row, err = strconv.Atoi(parts[0])
+		if err != nil {
+			log.Printf("invalid row number: %s\n", parts[0])
+		}
+		col, err = strconv.Atoi(parts[1])
+		if err != nil {
+			log.Printf("invalid column number: %s\n", parts[1])
+		}
+		row-- // row is 1-based on input but 0-based on storage
+		col-- // col too
+		if board[row][col] == 0 {
+			validMove = 1
+		} else {
+			log.Println("That cell is already used - try again")
+		}
 	}
-	input = strings.TrimSpace(input)
-	parts := strings.Split(input, ",")
-	if len(parts) != 2 {
-		log.Println("invalid input format, please use 'row,col'")
-	}
-	row, err = strconv.Atoi(parts[0])
-	if err != nil {
-		log.Printf("invalid row number: %s\n", parts[0])
-	}
-	col, err = strconv.Atoi(parts[1])
-	if err != nil {
-		log.Printf("invalid column number: %s\n", parts[1])
-	}
-	row-- // row is 1-based on input but 0-based on storage
-	col-- // col too
-	childSpan.SetAttributes(attribute.Int("row", row))
-	childSpan.SetAttributes(attribute.Int("col", col))
+	childSpan.SetAttributes(attribute.Int("humanRow", row+1))
+	childSpan.SetAttributes(attribute.Int("humanCol", col+1))
 	fmt.Printf("Row is %d and Col is %d\n", row, col)
-	childSpan.End()
 	return row, col
 }
 
@@ -77,6 +83,5 @@ func GetLetter(ctx context.Context, tracer trace.Tracer) int {
 			fmt.Println(`Error, please only enter an x or an o`)
 		}
 	}
-	childSpan.End()
 	return 0
 }

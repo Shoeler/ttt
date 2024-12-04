@@ -5,6 +5,7 @@ import (
 	"math"
 	"ttt/board"
 
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -29,18 +30,19 @@ func GetBestMove(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, 
 			}
 		}
 	}
-	childSpan.End()
+	childSpan.SetAttributes(attribute.Int("compRow", row+1))
+	childSpan.SetAttributes(attribute.Int("compCol", col+1))
 	return row, col
 }
 
 func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, depth int, isMaximizing bool, aiPlayer, humanPlayer int) int {
 	ctx, childSpan := tracer.Start(ctx, "minimax")
 	defer childSpan.End()
-	if board.CheckWin(ctx, tracer, gameBoard) != 0 {
-		return 10 - depth
+	if board.CheckWin(ctx, tracer, gameBoard) == humanPlayer {
+		return -1
 	}
-	if board.CheckWin(ctx, tracer, gameBoard) != 0 {
-		return depth - 10
+	if board.CheckWin(ctx, tracer, gameBoard) == aiPlayer {
+		return 1
 	}
 	if board.CheckDraw(ctx, tracer, gameBoard) {
 		return 0
@@ -59,7 +61,7 @@ func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, dept
 				}
 			}
 		}
-		childSpan.End()
+		childSpan.SetAttributes(attribute.Int("bestScore", bestScore))
 		return bestScore
 	} else {
 		bestScore := math.MaxInt
@@ -75,7 +77,6 @@ func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, dept
 				}
 			}
 		}
-		childSpan.End()
 		return bestScore
 	}
 }
