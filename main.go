@@ -24,7 +24,7 @@ const (
 )
 
 var myBoard [3][3]int // Initialize the board to zeros
-// var myBoard [3][3]int = [3][3]int{{2, 0, 0}, {1, 1, 2}, {0, 0, 0}}
+// var myBoard [3][3]int = [3][3]int{{2, 0, 0}, {1, 1, 2}, {0, 0, 0}} //debug to simplify the board
 var row, col, playerLetterNum int
 var gameNotEnded int = 0
 var computerTurn = false

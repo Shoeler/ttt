@@ -15,7 +15,6 @@ import (
 )
 
 func GetMove(ctx context.Context, tracer trace.Tracer, board [3][3]int) (row, col int) {
-	// var err error
 	ctx, childSpan := tracer.Start(ctx, "GetMove")
 	defer childSpan.End()
 	reader := bufio.NewReader(os.Stdin)
