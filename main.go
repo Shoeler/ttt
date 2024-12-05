@@ -91,7 +91,7 @@ func main() {
 			// myBoard[row][col] = computerLetterNum
 			if myBoard[row][col] == 0 { // Make sure the cell is empty
 				myBoard[row][col] = computerLetterNum
-				fmt.Printf("Computer move is %d,%d\n\n", row, col)
+				fmt.Printf("Computer move is %d,%d\n\n", row+1, col+1)
 			} else {
 				log.Println("Error - This should not happen, tried to change cell already full")
 				parentSpan.SetStatus(codes.Error, "Tried to change a cell already full")
