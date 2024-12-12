@@ -23,7 +23,8 @@ go run main.go
 
 **Running tests**
 ```
-go test
+go test ttt/board
+go test ttt/computer
 ```
 
 **Debugging**
