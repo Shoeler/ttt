@@ -119,5 +119,3 @@ func main() {
 		parentSpan.SetStatus(codes.Error, "This should not happen")
 	}
 }
-
-// To-do:  Get x being first, minimax working, write tests
