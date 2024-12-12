@@ -8,9 +8,8 @@ import (
 	"go.opentelemetry.io/otel/trace/noop"
 )
 
-// Create a mock tracer for testing
 func newMockTracer() trace.Tracer {
-	tp := noop.NewTracerProvider() // Initializes a new tracer provider
+	tp := noop.NewTracerProvider()
 	return tp.Tracer("mock-tracer")
 }
 

@@ -9,7 +9,7 @@ import (
 )
 
 func newMockTracer() trace.Tracer {
-	tp := noop.NewTracerProvider() // Initializes a new tracer provider
+	tp := noop.NewTracerProvider()
 	return tp.Tracer("mock-tracer")
 }
 
