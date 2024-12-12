@@ -31,6 +31,8 @@ func GetMove(ctx context.Context, tracer trace.Tracer, board [3][3]int) (row, co
 		parts := strings.Split(input, ",")
 		if len(parts) != 2 {
 			log.Println("invalid input format, please use 'row,col'")
+			continue
+
 		}
 		row, err = strconv.Atoi(parts[0])
 		if err != nil {
@@ -40,8 +42,14 @@ func GetMove(ctx context.Context, tracer trace.Tracer, board [3][3]int) (row, co
 		if err != nil {
 			log.Printf("invalid column number: %s\n", parts[1])
 		}
-		row-- // row is 1-based on input but 0-based on storage
-		col-- // col too
+		if (row > 0 && row < 4) && (col > 0 && col < 4) {
+			row-- // row is 1-based on input but 0-based on storage
+			col-- // col too
+		} else {
+			log.Printf("Error - rows and columns must be between 1 and 3.  You sent row %d and col %d\n", row, col)
+			continue
+		}
+
 		if board[row][col] == 0 {
 			validMove = 1
 		} else {
@@ -56,20 +64,18 @@ func GetMove(ctx context.Context, tracer trace.Tracer, board [3][3]int) (row, co
 func GetLetter(ctx context.Context, tracer trace.Tracer) int {
 	ctx, childSpan := tracer.Start(ctx, "GetLetter")
 	defer childSpan.End()
-	var err error
-	var input string
 	reader := bufio.NewReader(os.Stdin)
-	for true {
+	for {
 		fmt.Println("Select either x or o:")
-		input, err = reader.ReadString('\n')
+		input, err := reader.ReadString('\n')
 		if err != nil {
 			log.Println(`Please only enter an x or an o`)
-			childSpan.AddEvent("Incorrect letter input")
-			childSpan.SetStatus(codes.Error, "input broke")
+			childSpan.AddEvent("Something broke in GetLetter")
+			childSpan.SetStatus(codes.Error, "GetLetter input broke")
 			childSpan.RecordError(err)
-			break
+			return 0
 		}
-		input = strings.TrimSpace(input)
+		input = strings.ToLower(strings.TrimSpace(input))
 		switch input {
 		case "x":
 			childSpan.SetAttributes(attribute.Int("chosenLetter", 1))
@@ -81,5 +87,4 @@ func GetLetter(ctx context.Context, tracer trace.Tracer) int {
 			fmt.Println(`Error, please only enter an x or an o`)
 		}
 	}
-	return 0
 }

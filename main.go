@@ -24,9 +24,9 @@ const (
 )
 
 var myBoard [3][3]int // Initialize the board to zeros
-// var myBoard [3][3]int = [3][3]int{{2, 0, 0}, {1, 1, 2}, {0, 0, 0}} //debug to simplify the board
 var row, col, playerLetterNum int
-var gameNotEnded int = 0
+var gameEnded bool = false
+var winner int = 0
 var computerTurn = false
 
 func main() {
@@ -47,32 +47,27 @@ func main() {
 		parentSpan.End()
 		os.Exit(1)
 	}()
-
-	type Move struct {
-		Row int
-		Col int
-	}
 	var computerLetterNum int
 	var playerLetterArry = [3]string{"-", "x", "o"}
 	fmt.Println(" New Game ")
-	board.Print(ctx, tracer, myBoard)
+	board.PrintBoard(ctx, tracer, myBoard)
 	playerLetterNum = player.GetLetter(ctx, tracer)
 	parentSpan.SetAttributes(attribute.Int("playerLetterNum", playerLetterNum))
-	if playerLetterNum == 1 {
-		parentSpan.SetAttributes(attribute.Int("computerLetterNum", 2))
-		computerLetterNum = 2
+	if playerLetterNum == PlayerX {
+		parentSpan.SetAttributes(attribute.Int("computerLetterNum", PlayerO))
+		computerLetterNum = PlayerO
 		computerTurn = false
-	} else if playerLetterNum == 2 {
-		parentSpan.SetAttributes(attribute.Int("computerLetterNum", 1))
-		computerLetterNum = 1
+	} else if playerLetterNum == PlayerO {
+		parentSpan.SetAttributes(attribute.Int("computerLetterNum", PlayerX))
+		computerLetterNum = PlayerX
 		computerTurn = true
 		fmt.Sprintln("Computer will move first")
 	}
 
-	for gameNotEnded == 0 { // This is the per-turn loop
+	for gameEnded == false { // This is the per-turn loop
 		if computerTurn == false {
 			row, col = player.GetMove(ctx, tracer, myBoard)
-			if myBoard[row][col] == 0 { // Make sure the cell is empty
+			if myBoard[row][col] == Empty { // Make sure the cell is empty
 				myBoard[row][col] = playerLetterNum
 			} else {
 				log.Println("Error - This should not happen, tried to change cell already full")
@@ -80,16 +75,18 @@ func main() {
 				parentSpan.SetAttributes(attribute.Bool("computerTurn", computerTurn))
 			}
 			if board.CheckDraw(ctx, tracer, myBoard) {
-				gameNotEnded = 3
+				gameEnded = true
+				winner = 3
+				break
 			} else if board.CheckWin(ctx, tracer, myBoard) != 0 {
-				gameNotEnded = playerLetterNum
+				gameEnded = true
+				winner = playerLetterNum
+				break
 			}
-
 			computerTurn = true
 		} else if computerTurn {
 			row, col = computer.GetBestMove(ctx, tracer, myBoard, computerLetterNum, playerLetterNum)
-			// myBoard[row][col] = computerLetterNum
-			if myBoard[row][col] == 0 { // Make sure the cell is empty
+			if myBoard[row][col] == Empty { // Make sure the cell is empty
 				myBoard[row][col] = computerLetterNum
 				fmt.Printf("Computer move is %d,%d\n\n", row+1, col+1)
 			} else {
@@ -98,19 +95,25 @@ func main() {
 				parentSpan.SetAttributes(attribute.Bool("computerTurn", computerTurn))
 			}
 			if board.CheckDraw(ctx, tracer, myBoard) {
-				gameNotEnded = 3
+				gameEnded = true
+				winner = 3
+				break
 			} else if board.CheckWin(ctx, tracer, myBoard) != 0 {
-				gameNotEnded = computerLetterNum
+				gameEnded = true
+				winner = computerLetterNum
+				break
 			}
 			computerTurn = false
 		}
 
-		board.Print(ctx, tracer, myBoard)
+		board.PrintBoard(ctx, tracer, myBoard)
 	}
-	if gameNotEnded == 1 || gameNotEnded == 2 {
-		fmt.Printf("Congratulations to player %s !\n", playerLetterArry[gameNotEnded])
-	} else if gameNotEnded == 3 {
+	if winner == 1 || winner == 2 {
+		fmt.Printf("Congratulations to player %s !\n", playerLetterArry[winner])
+	} else if winner == 3 {
 		fmt.Printf("The game is a draw.\n")
+		parentSpan.SetAttributes(attribute.String("gameEnd", "draw"))
+		return
 	} else {
 		fmt.Println("Error - This should not happen, check honeycomb")
 		parentSpan.SetStatus(codes.Error, "This should not happen")

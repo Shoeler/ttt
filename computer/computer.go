@@ -9,8 +9,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-var aiPlayer, humanPlayer int
-
 // GetBestMove calculates and returns the best move for the AI player.
 func GetBestMove(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, aiPlayer int, humanPlayer int) (row, col int) {
 	ctx, childSpan := tracer.Start(ctx, "GetBestMove")
