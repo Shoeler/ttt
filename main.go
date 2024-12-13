@@ -48,7 +48,7 @@ func main() {
 		os.Exit(1)
 	}()
 	var computerLetterNum int
-	var playerLetterArry = [3]string{"-", "x", "o"}
+	var playerLetterArry = [3]string{"-", "X", "O"}
 	fmt.Println(" New Game ")
 	board.PrintBoard(ctx, tracer, myBoard)
 	playerLetterNum = player.GetLetter(ctx, tracer)
@@ -109,6 +109,7 @@ func main() {
 		board.PrintBoard(ctx, tracer, myBoard)
 	}
 	if winner == 1 || winner == 2 {
+		board.PrintBoard(ctx, tracer, myBoard)
 		fmt.Printf("Congratulations to player %s !\n", playerLetterArry[winner])
 	} else if winner == 3 {
 		fmt.Printf("The game is a draw.\n")

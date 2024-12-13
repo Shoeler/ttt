@@ -2,7 +2,6 @@ package computer
 
 import (
 	"context"
-	"math"
 	"ttt/board"
 
 	"go.opentelemetry.io/otel/attribute"
@@ -13,7 +12,7 @@ import (
 func GetBestMove(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, aiPlayer int, humanPlayer int) (row, col int) {
 	ctx, childSpan := tracer.Start(ctx, "GetBestMove")
 	defer childSpan.End()
-	bestScore := math.MinInt
+	bestScore := -10
 	// iterate through the board and check every empty space to see if it's the max score for the computer move
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
@@ -38,16 +37,21 @@ func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, dept
 	defer childSpan.End()
 	win := board.CheckWin(ctx, tracer, gameBoard)
 	if win == humanPlayer {
-		return math.MinInt32 + depth
+		winValue := -10 + depth
+		childSpan.SetAttributes(attribute.Int64("minimax_return", int64(winValue)))
+		return winValue
 	}
 	if win == aiPlayer {
-		return math.MaxInt32 - depth
+		winValue := 10 - depth
+		childSpan.SetAttributes(attribute.Int64("minimax_return", int64(winValue)))
+		return winValue
 	}
 	if board.CheckDraw(ctx, tracer, gameBoard) {
+		childSpan.SetAttributes(attribute.Int64("minimax_return", 0))
 		return 0
 	}
 	if isMaximizing {
-		bestScore := math.MinInt32
+		bestScore := -10
 		for i := 0; i < 3; i++ {
 			for j := 0; j < 3; j++ {
 				if gameBoard[i][j] == 0 {
@@ -63,7 +67,7 @@ func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, dept
 		childSpan.SetAttributes(attribute.Int("bestScore", bestScore))
 		return bestScore
 	} else {
-		bestScore := math.MaxInt32
+		bestScore := 10
 		for i := 0; i < 3; i++ {
 			for j := 0; j < 3; j++ {
 				if gameBoard[i][j] == 0 {
@@ -76,6 +80,7 @@ func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, dept
 				}
 			}
 		}
+		childSpan.SetAttributes(attribute.Int("bestScore", bestScore))
 		return bestScore
 	}
 }
