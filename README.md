@@ -22,7 +22,7 @@ go run main.go
 ```
 **Building the executable**
 ```
-go build 
+go build -o ttt main.go
 ```
 
 **Running tests**
