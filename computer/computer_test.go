@@ -16,14 +16,16 @@ func newMockTracer() trace.Tracer {
 func TestGetBestMove(t *testing.T) {
 	tracer := newMockTracer()
 	ctx := context.Background()
+	type tests struct {
+		name        string
+		board       [3][3]int
+		computer    int
+		human       int
+		rowExpected int
+		colExpected int
+	}
 
-	tests := []struct {
-		name     string
-		board    [3][3]int
-		computer int
-		human    int
-		expected [2]int
-	}{
+	var listTests = []tests{
 		{
 			name: "Computer(o) should block human (x) win",
 			board: [3][3]int{
@@ -31,28 +33,44 @@ func TestGetBestMove(t *testing.T) {
 				{0, 1, 0},
 				{0, 0, 0},
 			},
-			human:    1,
-			computer: 2,
-			expected: [2]int{3, 1},
+			human:       1,
+			computer:    2,
+			rowExpected: 3,
+			colExpected: 1,
 		},
 		{
 			name: "Computer(x) should block human (o) win",
 			board: [3][3]int{
-				{2, 1, 1},
-				{2, 1, 0},
+				{2, 0, 0},
+				{1, 1, 0},
 				{0, 0, 0},
 			},
-			human:    1,
-			computer: 2,
-			expected: [2]int{3, 1},
+			human:       1,
+			computer:    2,
+			rowExpected: 2,
+			colExpected: 3,
+		},
+		{
+			name: "Brandon's test - computer should pick best next move to win not blocking",
+			board: [3][3]int{
+				{1, 2, 0},
+				{1, 2, 1},
+				{0, 0, 0},
+			},
+			human:       1,
+			computer:    2,
+			rowExpected: 3,
+			colExpected: 2,
 		},
 	}
 
-	for _, test := range tests {
+	for _, test := range listTests {
 		t.Run(test.name, func(t *testing.T) {
-			row, col := GetBestMove(ctx, tracer, test.board, test.computer, test.human)
-			if row+1 != test.expected[0] && col+1 != test.expected[1] {
-				t.Errorf("expected %d, got row = %d col = %d", test.expected, row, col)
+			row, col := GetBestMove(ctx, tracer, test.board, test.computer, test.human) //returns 0-based
+			row++                                                                       // make 1-based
+			col++                                                                       //make 1-based
+			if row != test.rowExpected || col != test.colExpected {
+				t.Errorf("For test %s expected row %d col %d, got row = %d col = %d", test.name, test.rowExpected, test.colExpected, row, col)
 			}
 		})
 	}

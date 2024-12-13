@@ -38,16 +38,16 @@ func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, dept
 	defer childSpan.End()
 	win := board.CheckWin(ctx, tracer, gameBoard)
 	if win == humanPlayer {
-		return -1
+		return math.MinInt32 + depth
 	}
 	if win == aiPlayer {
-		return 1
+		return math.MaxInt32 - depth
 	}
 	if board.CheckDraw(ctx, tracer, gameBoard) {
 		return 0
 	}
 	if isMaximizing {
-		bestScore := math.MinInt
+		bestScore := math.MinInt32
 		for i := 0; i < 3; i++ {
 			for j := 0; j < 3; j++ {
 				if gameBoard[i][j] == 0 {
@@ -63,7 +63,7 @@ func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, dept
 		childSpan.SetAttributes(attribute.Int("bestScore", bestScore))
 		return bestScore
 	} else {
-		bestScore := math.MaxInt
+		bestScore := math.MaxInt32
 		for i := 0; i < 3; i++ {
 			for j := 0; j < 3; j++ {
 				if gameBoard[i][j] == 0 {
