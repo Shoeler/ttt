@@ -20,6 +20,10 @@ go get go.opentelemetry.io/otel/trace
 ```
 go run main.go
 ```
+**Building the executable**
+```
+go build 
+```
 
 **Running tests**
 ```
