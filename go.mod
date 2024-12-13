@@ -1,6 +1,6 @@
 module ttt
 
-go 1.23.3
+go 1.23
 
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
