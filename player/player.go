@@ -32,7 +32,6 @@ func GetMove(ctx context.Context, tracer trace.Tracer, board [3][3]int) (row, co
 		if len(parts) != 2 {
 			log.Println("invalid input format, please use 'row,col'")
 			continue
-
 		}
 		row, err = strconv.Atoi(parts[0])
 		if err != nil {
