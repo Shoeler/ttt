@@ -22,8 +22,11 @@ go run main.go
 ```
 **Building the executable**
 ```
+cd <root of the repo>
 go build -o ttt main.go
 ```
+
+This will drop an executable "ttt" in the root directory of the repo.
 
 **Running tests**
 ```
