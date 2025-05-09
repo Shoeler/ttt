@@ -108,14 +108,14 @@ func main() {
 
 		board.PrintBoard(ctx, tracer, myBoard)
 	}
-	if winner == 1 || winner == 2 {
-		board.PrintBoard(ctx, tracer, myBoard)
-		fmt.Printf("Congratulations to player %s !\n", playerLetterArry[winner])
-	} else if winner == 3 {
-		fmt.Printf("The game is a draw.\n")
+	board.PrintBoard(ctx, tracer, myBoard) // Always print at end
+	switch winner {
+	case 1, 2:
+		fmt.Printf("Congratulations to player %s!\n", playerLetterArry[winner])
+	case 3:
+		fmt.Println("The game is a draw.")
 		parentSpan.SetAttributes(attribute.String("gameEnd", "draw"))
-		return
-	} else {
+	default:
 		fmt.Println("Error - This should not happen, check honeycomb")
 		parentSpan.SetStatus(codes.Error, "This should not happen")
 	}
