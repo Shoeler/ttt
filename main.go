@@ -23,11 +23,12 @@ const (
 	Empty   = 0
 )
 
-var myBoard [3][3]int // Initialize the board to zeros
+var myBoard [3][3]int
 var row, col, playerLetterNum int
-var gameEnded bool = false
-var winner int = 0
-var computerTurn = false
+var gameEnded bool
+var winner int
+var winLine [][2]int
+var computerTurn bool
 
 func main() {
 	c := make(chan os.Signal, 1)
@@ -47,68 +48,66 @@ func main() {
 		parentSpan.End()
 		os.Exit(1)
 	}()
+
 	var computerLetterNum int
 	var playerLetterArry = [3]string{"-", "X", "O"}
+
 	fmt.Println(" New Game ")
-	board.PrintBoard(ctx, tracer, myBoard)
+	board.PrintBoard(ctx, tracer, myBoard, nil)
 	playerLetterNum = player.GetLetter(ctx, tracer)
 	parentSpan.SetAttributes(attribute.Int("playerLetterNum", playerLetterNum))
+
 	if playerLetterNum == PlayerX {
-		parentSpan.SetAttributes(attribute.Int("computerLetterNum", PlayerO))
 		computerLetterNum = PlayerO
 		computerTurn = false
-	} else if playerLetterNum == PlayerO {
-		parentSpan.SetAttributes(attribute.Int("computerLetterNum", PlayerX))
+	} else {
 		computerLetterNum = PlayerX
 		computerTurn = true
-		fmt.Sprintln("Computer will move first")
+		fmt.Println("Computer will move first")
 	}
+	parentSpan.SetAttributes(attribute.Int("computerLetterNum", computerLetterNum))
 
-	for gameEnded == false { // This is the per-turn loop
-		if computerTurn == false {
+	for !gameEnded {
+		if !computerTurn {
 			row, col = player.GetMove(ctx, tracer, myBoard)
-			if myBoard[row][col] == Empty { // Make sure the cell is empty
+			if myBoard[row][col] == Empty {
 				myBoard[row][col] = playerLetterNum
 			} else {
-				log.Println("Error - This should not happen, tried to change cell already full")
-				parentSpan.SetStatus(codes.Error, "Tried to change a cell already full")
+				log.Println("Error - Tried to change cell already full")
+				parentSpan.SetStatus(codes.Error, "Cell already full")
 				parentSpan.SetAttributes(attribute.Bool("computerTurn", computerTurn))
 			}
-			if board.CheckDraw(ctx, tracer, myBoard) {
-				gameEnded = true
-				winner = 3
-				break
-			} else if board.CheckWin(ctx, tracer, myBoard) != 0 {
-				gameEnded = true
-				winner = playerLetterNum
-				break
-			}
-			computerTurn = true
-		} else if computerTurn {
+		} else {
 			row, col = computer.GetBestMove(ctx, tracer, myBoard, computerLetterNum, playerLetterNum)
-			if myBoard[row][col] == Empty { // Make sure the cell is empty
+			if myBoard[row][col] == Empty {
 				myBoard[row][col] = computerLetterNum
 				fmt.Printf("Computer move is %d,%d\n\n", row+1, col+1)
 			} else {
-				log.Println("Error - This should not happen, tried to change cell already full")
-				parentSpan.SetStatus(codes.Error, "Tried to change a cell already full")
+				log.Println("Error - Tried to change cell already full")
+				parentSpan.SetStatus(codes.Error, "Cell already full")
 				parentSpan.SetAttributes(attribute.Bool("computerTurn", computerTurn))
 			}
-			if board.CheckDraw(ctx, tracer, myBoard) {
-				gameEnded = true
-				winner = 3
-				break
-			} else if board.CheckWin(ctx, tracer, myBoard) != 0 {
-				gameEnded = true
-				winner = computerLetterNum
-				break
-			}
-			computerTurn = false
 		}
 
-		board.PrintBoard(ctx, tracer, myBoard)
+		if board.CheckDraw(ctx, tracer, myBoard) {
+			gameEnded = true
+			winner = 3
+			break
+		}
+
+		var result int
+		result, winLine = board.CheckWin(ctx, tracer, myBoard)
+		if result != 0 {
+			gameEnded = true
+			winner = result
+			break
+		}
+
+		computerTurn = !computerTurn
+		board.PrintBoard(ctx, tracer, myBoard, nil)
 	}
-	board.PrintBoard(ctx, tracer, myBoard) // Always print at end
+
+	board.PrintBoard(ctx, tracer, myBoard, winLine)
 	switch winner {
 	case 1, 2:
 		fmt.Printf("Congratulations to player %s!\n", playerLetterArry[winner])
@@ -117,6 +116,6 @@ func main() {
 		parentSpan.SetAttributes(attribute.String("gameEnd", "draw"))
 	default:
 		fmt.Println("Error - This should not happen, check honeycomb")
-		parentSpan.SetStatus(codes.Error, "This should not happen")
+		parentSpan.SetStatus(codes.Error, "Unknown game end state")
 	}
 }

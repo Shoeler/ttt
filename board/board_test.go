@@ -18,9 +18,10 @@ func TestCheckWin(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
-		name     string
-		board    [3][3]int
-		expected int
+		name         string
+		board        [3][3]int
+		expected     int
+		expectedLine [][2]int
 	}{
 		{
 			name: "Row win for X",
@@ -29,7 +30,8 @@ func TestCheckWin(t *testing.T) {
 				{0, 2, 0},
 				{2, 0, 0},
 			},
-			expected: 1,
+			expected:     1,
+			expectedLine: [][2]int{{0, 0}, {0, 1}, {0, 2}},
 		},
 		{
 			name: "Column win for O",
@@ -38,7 +40,8 @@ func TestCheckWin(t *testing.T) {
 				{0, 2, 0},
 				{1, 2, 0},
 			},
-			expected: 2,
+			expected:     2,
+			expectedLine: [][2]int{{0, 1}, {1, 1}, {2, 1}},
 		},
 		{
 			name: "Diagonal win for X",
@@ -47,33 +50,46 @@ func TestCheckWin(t *testing.T) {
 				{2, 1, 0},
 				{0, 2, 1},
 			},
-			expected: 1,
+			expected:     1,
+			expectedLine: [][2]int{{0, 0}, {1, 1}, {2, 2}},
 		},
 		{
-			name: "Diagonal win for player 0",
+			name: "Diagonal win for O",
 			board: [3][3]int{
-				{2, 1, 0},
-				{1, 2, 0},
 				{0, 1, 2},
+				{1, 2, 0},
+				{2, 1, 0},
 			},
-			expected: 2,
-		},
+			expected:     2,
+			expectedLine: [][2]int{{0, 2}, {1, 1}, {2, 0}},
+		},		
 		{
-			name: "Draw",
+			name: "No winner",
 			board: [3][3]int{
 				{1, 2, 1},
 				{2, 1, 2},
 				{2, 1, 2},
 			},
-			expected: 0,
+			expected:     0,
+			expectedLine: nil,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			result := CheckWin(ctx, tracer, test.board)
-			if result != test.expected {
-				t.Errorf("expected %d, got %d", test.expected, result)
+			winner, winLine := CheckWin(ctx, tracer, test.board)
+			if winner != test.expected {
+				t.Errorf("expected winner %d, got %d", test.expected, winner)
+			}
+			if len(winLine) != len(test.expectedLine) {
+				t.Errorf("expected win line %v, got %v", test.expectedLine, winLine)
+			} else {
+				for i := range winLine {
+					if winLine[i] != test.expectedLine[i] {
+						t.Errorf("expected win line %v, got %v", test.expectedLine, winLine)
+						break
+					}
+				}
 			}
 		})
 	}
@@ -122,13 +138,22 @@ func TestPrintBoard(t *testing.T) {
 	tracer := newMockTracer()
 	ctx := context.Background()
 
-	board := [3][3]int{
-		{1, 2, 1},
-		{2, 0, 2},
-		{1, 2, 1},
-	}
+	t.Run("Print board without highlight", func(t *testing.T) {
+		board := [3][3]int{
+			{1, 2, 1},
+			{2, 0, 2},
+			{1, 2, 1},
+		}
+		PrintBoard(ctx, tracer, board, nil)
+	})
 
-	t.Run("Print board test", func(t *testing.T) {
-		PrintBoard(ctx, tracer, board)
+	t.Run("Print board with highlighted win", func(t *testing.T) {
+		board := [3][3]int{
+			{2, 2, 2},
+			{1, 1, 0},
+			{0, 0, 0},
+		}
+		highlight := [][2]int{{0, 0}, {0, 1}, {0, 2}}
+		PrintBoard(ctx, tracer, board, highlight)
 	})
 }
