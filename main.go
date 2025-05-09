@@ -23,7 +23,7 @@ const (
 	Empty   = 0
 )
 
-var myBoard [3][3]int
+var myBoard [3][3]int // Initialize the board to zeros
 var row, col, playerLetterNum int
 var gameEnded bool
 var winner int
@@ -70,21 +70,21 @@ func main() {
 	for !gameEnded {
 		if !computerTurn {
 			row, col = player.GetMove(ctx, tracer, myBoard)
-			if myBoard[row][col] == Empty {
+			if myBoard[row][col] == Empty { // Make sure the cell is empty
 				myBoard[row][col] = playerLetterNum
 			} else {
-				log.Println("Error - Tried to change cell already full")
-				parentSpan.SetStatus(codes.Error, "Cell already full")
+				log.Println("Error - This should not happen, tried to change cell already full")
+				parentSpan.SetStatus(codes.Error, "Tried to change a cell already full")
 				parentSpan.SetAttributes(attribute.Bool("computerTurn", computerTurn))
 			}
 		} else {
 			row, col = computer.GetBestMove(ctx, tracer, myBoard, computerLetterNum, playerLetterNum)
-			if myBoard[row][col] == Empty {
+			if myBoard[row][col] == Empty { // Make sure the cell is empty
 				myBoard[row][col] = computerLetterNum
 				fmt.Printf("Computer move is %d,%d\n\n", row+1, col+1)
 			} else {
-				log.Println("Error - Tried to change cell already full")
-				parentSpan.SetStatus(codes.Error, "Cell already full")
+				log.Println("Error - This should not happen, tried to change cell already full")
+				parentSpan.SetStatus(codes.Error, "Tried to change a cell already full")
 				parentSpan.SetAttributes(attribute.Bool("computerTurn", computerTurn))
 			}
 		}
@@ -116,6 +116,6 @@ func main() {
 		parentSpan.SetAttributes(attribute.String("gameEnd", "draw"))
 	default:
 		fmt.Println("Error - This should not happen, check honeycomb")
-		parentSpan.SetStatus(codes.Error, "Unknown game end state")
+		parentSpan.SetStatus(codes.Error, "This should not happen")
 	}
 }

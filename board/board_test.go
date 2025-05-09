@@ -54,7 +54,7 @@ func TestCheckWin(t *testing.T) {
 			expectedLine: [][2]int{{0, 0}, {1, 1}, {2, 2}},
 		},
 		{
-			name: "Diagonal win for O",
+			name: "Diagonal win for player 0",
 			board: [3][3]int{
 				{0, 1, 2},
 				{1, 2, 0},
@@ -64,7 +64,7 @@ func TestCheckWin(t *testing.T) {
 			expectedLine: [][2]int{{0, 2}, {1, 1}, {2, 0}},
 		},		
 		{
-			name: "No winner",
+			name: "Draw",
 			board: [3][3]int{
 				{1, 2, 1},
 				{2, 1, 2},
