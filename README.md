@@ -19,6 +19,12 @@ The codebase is organized into the following packages:
 
 ### Installation
 
+For macOS with [Homebrew](https://brew.sh/), you can install Go by running:
+```bash
+brew install golang
+```
+For other platforms, see the official [Go installation guide](https://go.dev/doc/install).
+
 1.  Clone the repository:
 
     ```bash
