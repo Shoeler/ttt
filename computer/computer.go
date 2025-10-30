@@ -9,6 +9,18 @@ import (
 )
 
 // GetBestMove calculates and returns the best move for the AI player.
+//
+// It uses the minimax algorithm to determine the optimal move.
+//
+// Parameters:
+//   - ctx: The context for OpenTelemetry tracing.
+//   - tracer: The tracer for OpenTelemetry.
+//   - gameBoard: A 3x3 integer array representing the game board.
+//   - aiPlayer: The integer representing the AI player.
+//   - humanPlayer: The integer representing the human player.
+//
+// Returns:
+//   - The row and column of the best move.
 func GetBestMove(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, aiPlayer int, humanPlayer int) (row, col int) {
 	ctx, childSpan := tracer.Start(ctx, "GetBestMove")
 	defer childSpan.End()
@@ -32,6 +44,23 @@ func GetBestMove(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, 
 	return row, col
 }
 
+// minimax implements the minimax algorithm to determine the best move.
+//
+// It recursively explores the game tree to find the move that maximizes the
+// AI's score while minimizing the human player's score.
+//
+// Parameters:
+//   - ctx: The context for OpenTelemetry tracing.
+//   - tracer: The tracer for OpenTelemetry.
+//   - gameBoard: A 3x3 integer array representing the game board.
+//   - depth: The current depth in the game tree.
+//   - isMaximizing: A boolean indicating whether the current player is maximizing
+//     their score.
+//   - aiPlayer: The integer representing the AI player.
+//   - humanPlayer: The integer representing the human player.
+//
+// Returns:
+//   - The score of the best move.
 func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, depth int, isMaximizing bool, aiPlayer, humanPlayer int) int {
 	ctx, childSpan := tracer.Start(ctx, "minimax")
 	defer childSpan.End()

@@ -14,6 +14,19 @@ const (
 	ColorGreen  = "\033[32m"
 )
 
+// CheckWin checks the board for a winning condition.
+//
+// It takes the current game board as input and checks for three in a row
+// horizontally, vertically, and diagonally.
+//
+// Parameters:
+//   - ctx: The context for OpenTelemetry tracing.
+//   - tracer: The tracer for OpenTelemetry.
+//   - myBoard: A 3x3 integer array representing the game board.
+//
+// Returns:
+//   - An integer representing the winning player (1 or 2), or 0 if there's no winner.
+//   - A slice of 2-element integer arrays representing the winning line, or nil if there's no winner.
 func CheckWin(ctx context.Context, tracer trace.Tracer, myBoard [3][3]int) (int, [][2]int) {
 	_, childSpan := tracer.Start(ctx, "CheckWin")
 	defer childSpan.End()
@@ -43,6 +56,17 @@ func CheckWin(ctx context.Context, tracer trace.Tracer, myBoard [3][3]int) (int,
 	return 0, nil
 }
 
+// CheckDraw checks the board for a draw condition.
+//
+// It takes the current game board as input and checks if all cells are filled.
+//
+// Parameters:
+//   - ctx: The context for OpenTelemetry tracing.
+//   - tracer: The tracer for OpenTelemetry.
+//   - myBoard: A 3x3 integer array representing the game board.
+//
+// Returns:
+//   - A boolean value indicating whether the game is a draw (true) or not (false).
 func CheckDraw(ctx context.Context, tracer trace.Tracer, myBoard [3][3]int) bool {
 	_, childSpan := tracer.Start(ctx, "CheckDraw")
 	var fullRows int = 0
@@ -62,6 +86,17 @@ func CheckDraw(ctx context.Context, tracer trace.Tracer, myBoard [3][3]int) bool
 	}
 }
 
+// PrintBoard prints the current game board to the console.
+//
+// It takes the current game board and an optional slice of coordinates to
+// highlight as input.
+//
+// Parameters:
+//   - ctx: The context for OpenTelemetry tracing.
+//   - tracer: The tracer for OpenTelemetry.
+//   - myBoard: A 3x3 integer array representing the game board.
+//   - highlight: A slice of 2-element integer arrays representing the
+//     coordinates to highlight.
 func PrintBoard(ctx context.Context, tracer trace.Tracer, myBoard [3][3]int, highlight [][2]int) {
 	_, childSpan := tracer.Start(ctx, "PrintBoard")
 	defer childSpan.End()

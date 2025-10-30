@@ -14,6 +14,18 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// GetMove prompts the human player for their move and returns the coordinates.
+//
+// It validates the input to ensure it's in the correct format and that the
+// chosen cell is empty.
+//
+// Parameters:
+//   - ctx: The context for OpenTelemetry tracing.
+//   - tracer: The tracer for OpenTelemetry.
+//   - board: A 3x3 integer array representing the game board.
+//
+// Returns:
+//   - The row and column of the player's move.
 func GetMove(ctx context.Context, tracer trace.Tracer, board [3][3]int) (row, col int) {
 	ctx, childSpan := tracer.Start(ctx, "GetMove")
 	defer childSpan.End()
@@ -60,6 +72,16 @@ func GetMove(ctx context.Context, tracer trace.Tracer, board [3][3]int) (row, co
 	return row, col
 }
 
+// GetLetter prompts the human player to choose their letter (X or O).
+//
+// It validates the input to ensure it's either 'x' or 'o'.
+//
+// Parameters:
+//   - ctx: The context for OpenTelemetry tracing.
+//   - tracer: The tracer for OpenTelemetry.
+//
+// Returns:
+//   - An integer representing the player's chosen letter (1 for X, 2 for O).
 func GetLetter(ctx context.Context, tracer trace.Tracer) int {
 	ctx, childSpan := tracer.Start(ctx, "GetLetter")
 	defer childSpan.End()

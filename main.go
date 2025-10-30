@@ -30,6 +30,11 @@ var winner int
 var winLine [][2]int
 var computerTurn bool
 
+// main is the entry point of the application.
+//
+// It initializes the game, sets up OpenTelemetry, and then enters the main
+// game loop. The game loop alternates between the human player and the
+// computer, checking for a win or draw condition after each move.
 func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
