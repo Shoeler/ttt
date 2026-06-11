@@ -1,50 +1,44 @@
-This is a repo I'm putting together as the entrypoint to an apprenticeship.  I haven't written much code since I moved into leadership, so this is a new way to enhance my skills and experience.
-It implements the minimax algorithm to make the computer theoretically unbeatable and also uses open telemetry for debugging.
+A tic-tac-toe CLI built as an apprenticeship project. Implements the minimax algorithm to make the computer theoretically unbeatable, and uses OpenTelemetry for tracing (streamed to Honeycomb).
 
-**Golang Installation - all other platforms**
+## Installation
 
-See:  [Golang install](https://go.dev/doc/install)
+Requires Go 1.23+. See [Golang install](https://go.dev/doc/install) for all platforms, or on macOS:
 
-**Golang Installation - macOS with homebrew**
-```
+```bash
 brew install golang
-cd <repo directory>
-go get github.com/honeycombio/otel-config-go/otelconfig
-go get go.opentelemetry.io/otel
-go get go.opentelemetry.io/otel/attribute
-go get go.opentelemetry.io/otel/codes
-go get go.opentelemetry.io/otel/trace
 ```
 
-**Running the game**
+Dependencies are managed with Go modules — run `go mod download` to fetch them.
+
+## Usage
+
+```bash
+make run      # run the game
+make build    # build ./ttt executable
+make test     # run all tests
+make clean    # remove ./ttt
 ```
+
+Or directly:
+
+```bash
 go run main.go
-```
-**Building the executable**
-```
-cd <root of the repo>
-go build -o ttt main.go
+go test ./...
 ```
 
-This will drop an executable "ttt" in the root directory of the repo.
+## Tracing (Honeycomb)
 
-**Running tests**
-```
-go test ttt/board
-go test ttt/computer
-```
+Tracing is wired to Honeycomb via OTLP. Create a free account at [honeycomb.io](https://www.honeycomb.io) and set these env vars before running (replace the API key):
 
-**Debugging**
-
-I put all of my debugging code into open telemetry, which is setup to stream to honeycomb.  Create a free account with [honeycomb](https://www.honeycomb.io)  and then the following environment variables must be set in your terminal.  Make sure you change the `x-honeycomb-team` to your API key.
-```
+```bash
 export OTEL_SERVICE_NAME="tic-tac-toe"
 export OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
 export OTEL_EXPORTER_OTLP_ENDPOINT="https://api.honeycomb.io"
 export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=<YOUR_API_KEY_HERE>"
 ```
 
-If you don't set these variables, you may get odd errors.
+If these are not set you may see errors on startup, but the game still runs.
 
+---
 
-Comments, questions?  E-mail me:  schuyler@sreconsulting.io
+Comments, questions? Email: schuyler@sreconsulting.io

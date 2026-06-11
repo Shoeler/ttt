@@ -89,17 +89,17 @@ func main() {
 			}
 		}
 
-		if board.CheckDraw(ctx, tracer, myBoard) {
-			gameEnded = true
-			winner = 3
-			break
-		}
-
 		var result int
 		result, winLine = board.CheckWin(ctx, tracer, myBoard)
 		if result != 0 {
 			gameEnded = true
 			winner = result
+			break
+		}
+
+		if board.CheckDraw(ctx, tracer, myBoard) {
+			gameEnded = true
+			winner = 3
 			break
 		}
 
