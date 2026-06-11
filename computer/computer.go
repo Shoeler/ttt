@@ -13,12 +13,12 @@ func GetBestMove(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, 
 	ctx, childSpan := tracer.Start(ctx, "GetBestMove")
 	defer childSpan.End()
 	bestScore := -10
-	// iterate through the board and check every empty space to see if it's the max score for the computer move
+	var nodesEvaluated int
 	for i := range 3 {
 		for j := range 3 {
 			if gameBoard[i][j] == 0 {
 				gameBoard[i][j] = aiPlayer
-				score := minimax(ctx, tracer, gameBoard, 0, false, aiPlayer, humanPlayer)
+				score := minimax(ctx, tracer, gameBoard, 0, false, aiPlayer, humanPlayer, &nodesEvaluated)
 				gameBoard[i][j] = 0
 				if score > bestScore {
 					bestScore = score
@@ -27,27 +27,25 @@ func GetBestMove(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, 
 			}
 		}
 	}
-	childSpan.SetAttributes(attribute.Int("compRow", row+1))
-	childSpan.SetAttributes(attribute.Int("compCol", col+1))
+	childSpan.SetAttributes(
+		attribute.Int("compRow", row+1),
+		attribute.Int("compCol", col+1),
+		attribute.Int("bestScore", bestScore),
+		attribute.Int("nodesEvaluated", nodesEvaluated),
+	)
 	return row, col
 }
 
-func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, depth int, isMaximizing bool, aiPlayer, humanPlayer int) int {
-	ctx, childSpan := tracer.Start(ctx, "minimax")
-	defer childSpan.End()
+func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, depth int, isMaximizing bool, aiPlayer, humanPlayer int, nodesEvaluated *int) int {
+	*nodesEvaluated++
 	win, _ := board.CheckWin(ctx, tracer, gameBoard)
 	if win == humanPlayer {
-		winValue := -10 + depth
-		childSpan.SetAttributes(attribute.Int64("minimax_return", int64(winValue)))
-		return winValue
+		return -10 + depth
 	}
 	if win == aiPlayer {
-		winValue := 10 - depth
-		childSpan.SetAttributes(attribute.Int64("minimax_return", int64(winValue)))
-		return winValue
+		return 10 - depth
 	}
 	if board.CheckDraw(ctx, tracer, gameBoard) {
-		childSpan.SetAttributes(attribute.Int64("minimax_return", 0))
 		return 0
 	}
 	if isMaximizing {
@@ -56,7 +54,7 @@ func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, dept
 			for j := range 3 {
 				if gameBoard[i][j] == 0 {
 					gameBoard[i][j] = aiPlayer
-					score := minimax(ctx, tracer, gameBoard, depth+1, false, aiPlayer, humanPlayer)
+					score := minimax(ctx, tracer, gameBoard, depth+1, false, aiPlayer, humanPlayer, nodesEvaluated)
 					gameBoard[i][j] = 0
 					if score > bestScore {
 						bestScore = score
@@ -64,7 +62,6 @@ func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, dept
 				}
 			}
 		}
-		childSpan.SetAttributes(attribute.Int("bestScore", bestScore))
 		return bestScore
 	} else {
 		bestScore := 10
@@ -72,7 +69,7 @@ func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, dept
 			for j := range 3 {
 				if gameBoard[i][j] == 0 {
 					gameBoard[i][j] = humanPlayer
-					score := minimax(ctx, tracer, gameBoard, depth+1, true, aiPlayer, humanPlayer)
+					score := minimax(ctx, tracer, gameBoard, depth+1, true, aiPlayer, humanPlayer, nodesEvaluated)
 					gameBoard[i][j] = 0
 					if score < bestScore {
 						bestScore = score
@@ -80,7 +77,6 @@ func minimax(ctx context.Context, tracer trace.Tracer, gameBoard [3][3]int, dept
 				}
 			}
 		}
-		childSpan.SetAttributes(attribute.Int("bestScore", bestScore))
 		return bestScore
 	}
 }

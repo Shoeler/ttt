@@ -25,7 +25,8 @@ func GetMove(ctx context.Context, tracer trace.Tracer, board [3][3]int) (row, co
 			childSpan.AddEvent("Input error on row,col")
 			childSpan.SetStatus(codes.Error, "input broke")
 			childSpan.RecordError(err)
-			log.Println(err)
+			childSpan.End()
+			log.Fatal(err)
 		}
 		input = strings.TrimSpace(input)
 		parts := strings.Split(input, ",")
@@ -68,11 +69,11 @@ func GetLetter(ctx context.Context, tracer trace.Tracer) int {
 		fmt.Println("Select either x or o:")
 		input, err := reader.ReadString('\n')
 		if err != nil {
-			log.Println(`Please only enter an x or an o`)
 			childSpan.AddEvent("Something broke in GetLetter")
 			childSpan.SetStatus(codes.Error, "GetLetter input broke")
 			childSpan.RecordError(err)
-			return 0
+			childSpan.End()
+			log.Fatal(err)
 		}
 		input = strings.ToLower(strings.TrimSpace(input))
 		switch input {

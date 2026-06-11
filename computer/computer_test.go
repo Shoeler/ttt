@@ -39,7 +39,7 @@ func TestGetBestMove(t *testing.T) {
 			colExpected: 1,
 		},
 		{
-			name: "Computer(x) should block human (o) win",
+			name: "Computer(o) should block human (x) row win",
 			board: [3][3]int{
 				{2, 0, 0},
 				{1, 1, 0},
@@ -47,6 +47,18 @@ func TestGetBestMove(t *testing.T) {
 			},
 			human:       1,
 			computer:    2,
+			rowExpected: 2,
+			colExpected: 3,
+		},
+		{
+			name: "Computer(x) should block human (o) row win",
+			board: [3][3]int{
+				{1, 0, 0},
+				{2, 2, 0},
+				{0, 0, 0},
+			},
+			human:       2,
+			computer:    1,
 			rowExpected: 2,
 			colExpected: 3,
 		},
